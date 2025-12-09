@@ -26,7 +26,7 @@ nltk.download('punkt')
 nltk.download('punkt_tab')
 print("NLTK data download complete.")
 
-# --- Load Data ---
+#  loads our data 
 file_name = 'survey_data.csv'
 try:
     df = pd.read_csv(file_name, header=0, skiprows=[1, 2])
@@ -35,7 +35,7 @@ except FileNotFoundError:
     print("Please make sure your CSV file is in the same folder and named correctly.")
     sys.exit()
 
-# --- Filter Data ---
+# filter our csv files from qualtrics
 df = df[df['Status'] == 'IP Address'].reset_index(drop=True)
 df = df[df['Finished'] == True]
 print(f"Successfully loaded and filtered data. Found {len(df)} real responses.")
@@ -43,7 +43,7 @@ if len(df) == 0:
     print("FATAL ERROR: No real responses found. Check your filters.")
     sys.exit()
 
-# --- Run Sentiment Analysis ---
+# run the sentiment analysis on cleaned data 
 q9_column = 'Q9'
 df[q9_column] = df[q9_column].fillna('')
 analyzer = SentimentIntensityAnalyzer()
@@ -62,8 +62,8 @@ print("Saved 'cleaned_survey_data.csv'.")
 
 df_clean = pd.read_csv('cleaned_survey_data.csv')
 
-# ---  (Descriptive Stats) ---
-print("\nLevel 1: Generating descriptive plots...")
+# shows stats for respctive plots
+print("\n Generating descriptive plots.")
 plt.figure(figsize=(8, 6))
 sns.countplot(x='sentiment_label', data=df_clean, order=['Positive', 'Neutral', 'Negative'])
 plt.title('Sentiment Breakdown of WSU Students')
@@ -72,7 +72,7 @@ plt.xlabel('Sentiment')
 plt.savefig('level_1_sentiment_plot.png')
 print("Saved 'level_1_sentiment_plot.png'")
 
-# --- (Feature Importance) ---
+# builds features
 print("\nLevel 2: Building Random Forest with Cross-Validation...")
 feature_columns = [
     'Q3', 'Q4', 'Q5_1', 'Q5_2', 'Q5_3', 'Q5_4', 'Q5_5',
@@ -121,8 +121,8 @@ else:
     print("Warning: Not enough data for reliable cross-validation. Skipping model.")
 
 
-# word clouds 
-print("\nLevel 3: Generating Word Clouds...")
+# generate word clouds 
+print("\n Generating Word Clouds.")
 stop_words = set(stopwords.words('english'))
 positive_text = ' '.join(df_clean[df_clean['sentiment_label'] == 'Positive'][q9_column])
 negative_text = ' '.join(df_clean[df_clean['sentiment_label'] == 'Negative'][q9_column])
@@ -145,7 +145,7 @@ if len(negative_text) > 0:
     plt.savefig('level_3_negative_wordcloud.png')
     print("Saved 'level_3_negative_wordcloud.png'")
 
-# ---(Clustering) ---
+# performs clustering with labels
 print("\nLevel 4: Finding user clusters...")
 if len(df_clean) > 3:
     usage_features = ['Q4', 'Q6a', 'Q6b', 'Q8']
@@ -171,12 +171,11 @@ if len(df_clean) > 3:
 else:
     print("Not enough data to perform clustering.")
 
-# --- Sankey Diagram ---
-print("\nLevel 5: Generating Upgraded Sankey Diagram...")
+# does sankey diagram
+print("\n Generating Upgraded Sankey Diagram.")
 
 df_clean['Q11'] = df_clean['Q11'].fillna('College Not Stated')
 
-# 1. Manually define the order of our labels
 all_college_names = list(df_clean['Q11'].unique())
 main_colleges = [c for c in all_college_names if c not in ["Other / I don't know", "College Not Stated"]]
 main_colleges.sort()
@@ -186,13 +185,13 @@ sentiments = ['Positive', 'Neutral', 'Negative']
 all_labels = list(colleges) + list(user_groups) + list(sentiments)
 
 # 2. Create a color map for all labels
-college_colors = ['#EF476F'] * len(colleges) # Pink
-group_colors = ['#FFD166'] * len(user_groups) # Yellow
-sentiment_map = {'Positive': '#06D6A0', 'Neutral': '#118AB2', 'Negative': '#EF476F'} # Green, Blue, Red
+college_colors = ['#EF476F'] * len(colleges) 
+group_colors = ['#FFD166'] * len(user_groups) 
+sentiment_map = {'Positive': '#06D6A0', 'Neutral': '#118AB2', 'Negative': '#EF476F'}
 sentiment_colors = [sentiment_map[s] for s in sentiments]
 all_colors = college_colors + group_colors + sentiment_colors
 
-# 3. Build the the flows
+# builds flows for sankey
 links_c_ug = df_clean.groupby(['Q11', 'User_Group']).size().reset_index(name='count')
 links_ug_s = df_clean.groupby(['User_Group', 'sentiment_label']).size().reset_index(name='count')
 all_links = pd.concat([
@@ -203,7 +202,7 @@ label_indices = {label: i for i, label in enumerate(all_labels)}
 all_links['source_idx'] = all_links['source'].map(label_indices)
 all_links['target_idx'] = all_links['target'].map(label_indices)
 
-# Create  Plotly Sankey figure
+# creates figures
 fig = go.Figure(data=[go.Sankey(
     node = dict(
       pad = 25,
@@ -219,7 +218,7 @@ fig = go.Figure(data=[go.Sankey(
       color = '#EEEEEE'
   ))])
 
-# 5. Update layout with bigger font
+
 fig.update_layout(title_text="WSU Student Sentiment Flow: College -> Type of Use -> Sentiment", 
                   font_size=14,
                   font_family="Arial")
@@ -227,4 +226,4 @@ fig.update_layout(title_text="WSU Student Sentiment Flow: College -> Type of Use
 fig.write_html("level_5_sankey_diagram_FINAL_v2.html")
 print("Saved 'level_5_sankey_diagram_FINAL_v2.html'")
 
-print("\n--- ALL ANALYSIS COMPLETE ---")
+print("\n ANALYSIS COMPLETE")
