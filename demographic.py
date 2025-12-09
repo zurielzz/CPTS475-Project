@@ -14,14 +14,14 @@ except FileNotFoundError:
     print("Please run your main 'analysis.py' script first.")
     sys.exit()
 
-# --- sentiment chart by what college the student is in, engineering,art, or something else ---
+#  sentiment chart by what college the student is in
 print("Generating plot: Sentiment by College...")
 plt.figure(figsize=(12, 8))
 sns.countplot(
     data=df_clean,
-    y='Q11',  # Use y-axis for long college names
+    y='Q11',  
     hue='sentiment_label',
-    order=df_clean['Q11'].value_counts().index # Order by most common college
+    order=df_clean['Q11'].value_counts().index 
 )
 plt.title('Sentiment Breakdown by WSU College', fontsize=16)
 plt.xlabel('Number of Students', fontsize=12)
@@ -31,14 +31,14 @@ plt.tight_layout()
 plt.savefig('analysis_plot_college.png')
 print("Saved 'analysis_plot_college.png'")
 
-# --- sentiment by year, junior ,senior etc ---
+# sentiment by year, junior ,senior etc
 print("Generating plot: Sentiment by Year...")
 plt.figure(figsize=(10, 6))
 sns.countplot(
     data=df_clean,
-    x='Q10', # Use x-axis for 'Year'
+    x='Q10', 
     hue='sentiment_label',
-    order=['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate Student'] # Logical order
+    order=['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate Student'] 
 )
 plt.title('Sentiment Breakdown by Year of Study', fontsize=16)
 plt.xlabel('Year of Study', fontsize=12)
@@ -48,4 +48,4 @@ plt.tight_layout()
 plt.savefig('analysis_plot_year.png')
 print("Saved 'analysis_plot_year.png'")
 
-print("\n--- DEMOGRAPHIC ANALYSIS COMPLETE ---")
+print("\n DEMOGRAPHIC ANALYSIS COMPLETE")
